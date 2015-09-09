@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Camera name="camera">
+ <Geometry width="768" height="576" ncx="768.000000" nfx="768.000000" dx="0.007800" dy="0.010000" dpx="0.007800" dpy="0.010000"/>
+ <Intrinsic focal="8.964751" kappa1="0.003113" cx="376.050216" cy="273.290697" sx="0.761874"/>
+ <Extrinsic tx="-3.467019" ty="1.407914" tz="19.961319" rx="1.831912" ry="0.622280" rz="0.135149"/>
+</Camera>
