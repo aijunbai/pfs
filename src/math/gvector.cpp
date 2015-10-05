@@ -53,12 +53,12 @@ template <> vector3d<float> vector3d<float>::transform(const matrix3d<float> &M)
 
 template <> float vector3d<float>::sqlength() const
 {
-  return sse_dot_product<float>(coefficients,coefficients,0x71);
+  return sse_dot_product<float>(coefficients,coefficients,0x71u);
 }
 
 template <> float vector3d<float>::dot(const vector3d<float> p) const
 {
-  return sse_dot_product<float>(coefficients,p.coefficients,0x71);
+  return sse_dot_product<float>(coefficients,p.coefficients,0x71u);
 }
 
 #endif

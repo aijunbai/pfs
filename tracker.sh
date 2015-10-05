@@ -15,5 +15,5 @@ mv human_tracker* bak/
 mv intentions/* bak/intentions/
 cd $DIR
 
-time ./pfs $@ #| tee human_tracker.output
+time ./pfs $@ | tee human_tracker.output
 
