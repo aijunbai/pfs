@@ -22,17 +22,19 @@ struct Detection {
   typedef shared_ptr<Detection> Ptr;
 
   vector2d mPosition;  //pos in ground
+  double mOrientation; //estimated orientation, if any
   double mConfidence; //[0, 1], if any
   double mHeight[2];  //bounding box height in image & world frame, if available
   double mWidth[2];   //bounding box width in image & world frame, if available
 
   Detection(
-      vector2d pos = vector2d(0.0, 0.0),
-      double conf = 0.0,
-      double ih = -1.0,
-      double iw = -1.0,
-      double rh = -1.0,
-      double rw = -1.0): mPosition(pos)
+      vector2d pos /*= vector2d(0.0, 0.0)*/,
+      double orientation /*= -1.0*/,
+      double conf /*= 0.0*/,
+      double ih /*= -1.0*/,
+      double iw /*= -1.0*/,
+      double rh /*= -1.0*/,
+      double rw /*= -1.0*/): mPosition(pos), mOrientation(orientation)
   {
     mHeight[0] = ih;
     mWidth[0] = iw;
@@ -55,6 +57,9 @@ struct Detection {
     }
 
     mConfidence = MinMax(0.0, conf, 1.0);
+    if (isinf(mOrientation) || isnan(mOrientation)) {
+      mOrientation = DBL_MAX;
+    }
   }
 
   double x() const {
@@ -63,6 +68,18 @@ struct Detection {
 
   double y() const {
     return mPosition.y;
+  }
+
+  double &Orientation() {
+    return mOrientation;
+  }
+
+  const double &Orientation() const {
+    return mOrientation;
+  }
+
+  void SetOrientation(double orient) {
+    mOrientation = orient;
   }
 };
 
@@ -77,7 +94,7 @@ public:
   Observation();
   virtual ~Observation();
 
-  double ObservationLikelihood(int o, HumanState &hs);
+  double ObservationLikelihood(int o, const HumanState &hs);
   double FalseDetectionProb(uint O, uint F, double duration);
   double MissingDetectionProb(uint S, uint M, double duration);
 
@@ -96,9 +113,9 @@ public:
   void Reset();
 
 private:
-  double ObservationLikelihoodSingle(const vector2d &obs, const vector2d &pos);
-  double ObservationLikelihoodAugmented(Detection &det, HumanState &hs);
-  double ObservationLikelihoodTimed(const TimedDetection &det, HumanState &hs);
+  double ObservationLikelihoodSingle(const Detection &det, const HumanState &hs);
+  double ObservationLikelihoodAugmented(const Detection &det, const HumanState &hs);
+  double ObservationLikelihoodTimed(const TimedDetection &det, const HumanState &hs);
 
 public:
   std::vector<Detection::Ptr> mDetections;

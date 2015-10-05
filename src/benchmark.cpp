@@ -133,7 +133,7 @@ void Displayer::DrawField(QPainter &painter, int p, int view)
     painter.fillPath(path, QBrush(color));
   }
 
-  painter.setPen(QPen(Qt::white, 2.0));
+  painter.setPen(QPen(Qt::green, 2.0));
 
   QFont font;
   font.setBold(true);
@@ -271,14 +271,14 @@ void Displayer::update()
           continue;
         }
 
-        QColor color = QColor(ih->DisplayingColor());
+        QColor color = ih->DisplayingColor();
         DrawParticles(ih->mStatePool, ih->Confidence(), color, 2.5, *painter[p]);
 
         int n = ih->mTrajectory.size();
 
         for (int i = 0; i < n - 1; ++i) {
-          HumanState::Ptr &state = ih->mTrajectory.at(i).first;
-          HumanState::Ptr &next_state = ih->mTrajectory.at(i+1).first;
+          HumanState::Ptr &state = ih->mTrajectory.at(i).state;
+          HumanState::Ptr &next_state = ih->mTrajectory.at(i+1).state;
 
           vector2d &from = state->Position();
           vector2d &to = next_state->Position();
@@ -289,7 +289,7 @@ void Displayer::update()
           double alpha = pow(0.99, n - 2 - i);
 
           if (Params::ins().report_threshold < 0.0) {
-            alpha *= ih->mTrajectory.at(i).second;
+            alpha *= ih->mTrajectory.at(i).confidence;
           }
 
           color.setAlphaF(alpha);
@@ -391,8 +391,8 @@ BenchmarkSimulator::BenchmarkSimulator(
     Params::ins().observation_proposal_prob = 0.9;
     Params::ins().observation_error = 0.6;
     Params::ins().false_density = 0.8;
-    Params::ins().death_rate = 0.0;
-    Params::ins().refinement_rate = 0.05;
+    Params::ins().death_rate = 0.01;
+    Params::ins().refinement_rate = 0.01;
   }
   else {
     Params::ins().false_rate = 6.0;
@@ -400,8 +400,8 @@ BenchmarkSimulator::BenchmarkSimulator(
     Params::ins().observation_proposal_prob = 0.9;
     Params::ins().observation_error = 0.5;
     Params::ins().false_density = 0.5;
-    Params::ins().death_rate = 0.0;
-    Params::ins().refinement_rate = 0.05;
+    Params::ins().death_rate = 0.02;
+    Params::ins().refinement_rate = 0.01;
   }
 
   Params::ins().view_width = 360.0;
@@ -414,6 +414,7 @@ BenchmarkSimulator::BenchmarkSimulator(
 
   Params::ins().velocity_augment = true;
   Params::ins().detection_confidence = true;
+  Params::ins().detection_orientation = false;
   Params::ins().hierarchical_filters = true;
   Params::ins().gaussian_approximate = true;
 
@@ -507,6 +508,7 @@ void BenchmarkSimulator::GenerateObservations(Observation &obs, double duration)
     obs.mDetections.push_back(
         make_shared<Detection>(
             obj.position,
+            -1.0, //no orientation
             obj.confidence,
             obj.ih,
             obj.iw,
@@ -528,7 +530,7 @@ void BenchmarkSimulator::LogRCG()
 
     for (int i = 0; i <= HumanTracker::LOG_ALL; ++i) {
       mTracker->mRCGLogger[i]->LogRectangular(
-          rect.left(), rect.right(), rect.top(), rect.bottom(), RCGLogger::Blue);
+          rect.left(), rect.right(), rect.top(), rect.bottom(), Qt::black);
     }
   }
 }
@@ -558,6 +560,15 @@ void BenchmarkSimulator::BenchmarkData::InitMetaData()
     mRawDataPath =
         "MOT-benchmarks/data//tud_stadtmitte/DaMultiview-seq";
     mFormat = ".png";
+  }
+  else if (mName == "CMU") {
+    mData.resize(1673);
+
+    mStartNumber = 0;
+    mRawDataPath = "MOT-benchmarks/data/CMU/frame_";
+    mFormat = ".png";
+
+    Params::ins().cropped = false;
   }
 
   mCenter.set((xmin + xmax) / 2.0, (ymin + ymax) / 2.0);
@@ -622,7 +633,7 @@ bool BenchmarkSimulator::BenchmarkData::fromXml(
                 }
               }
               else {
-                assert(0);
+                break;
               }
 
               xmlNodePtr box = object->xmlChildrenNode;
@@ -688,9 +699,12 @@ bool BenchmarkSimulator::BenchmarkData::fromXml(
               object = object->next;
             }
           }
+          else {
+            break;
+          }
         }
         else {
-          assert(0);
+          break;
         }
 
         mData.push_back(frame_data);

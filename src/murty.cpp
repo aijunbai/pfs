@@ -27,17 +27,25 @@ inline const T* begin_ptr(const std::vector<T,TAl>& v)
 STATISTIC::Ptr Murty::mTimeUsageStat;
 STATISTIC::Ptr Murty::mMurtySizeStat;
 
-Murty::Murty(const char *path)
+Murty::Murty()
 {
+  if (Params::ins().threads == 0) {
+    PRINT_ERROR("Murty::Murty(): Params::ins().threads == 0");
+    abort();
+  }
 }
 
 Murty::~Murty()
 {
+  if (Params::ins().threads == 0) {
+    PRINT_ERROR("Murty::~Murty(): Params::ins().threads == 0");
+    abort();
+  }
 }
 
 Murty &Murty::ins()
 {
-  static Murty murty("./src/java-k-best.jar");
+  static Murty murty;
 
   return murty;
 }

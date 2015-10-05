@@ -24,6 +24,7 @@ bool ret = Task::Register<OpenAreaTask>("OpenAreaTask");
 OpenAreaTask::OpenAreaTask(): Task("OpenAreaTask")
 {
 
+  Params::ins().intention_mode = -1;
 }
 
 OpenAreaTask::~OpenAreaTask()
@@ -85,13 +86,19 @@ OpenAreaTask::OpenAreaSimulator::OpenAreaSimulator(
     Task *task, HumanTracker *tracker):
     Simulator(task, tracker)
 {
-  Params::ins().false_rate = 1.0;
-  Params::ins().missing_rate = 1.0;
-  Params::ins().death_rate = 0.02;
-  Params::ins().observation_error = 0.25;
+  Params::ins().false_rate = 2.0;
+  Params::ins().missing_rate = 2.0;
+  Params::ins().death_rate = 0.01;
+  Params::ins().observation_error = 0.3;
+  Params::ins().sigma_power = 0.5;
+  Params::ins().max_em_steps = 10;
+
+  Params::ins().observation_proposal_prob = 0.9;
+  Params::ins().false_density = 0.5;
+  Params::ins().refinement_rate = 0.0;
 
   Params::ins().view_width = 360.0;
-  Params::ins().max_humans = 10;
+  Params::ins().max_humans = 5;
 }
 
 OpenAreaTask::OpenAreaSimulator::~OpenAreaSimulator()

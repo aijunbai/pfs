@@ -16,7 +16,26 @@ using namespace std;
 
 Task::Task(string name): mName(name), mTracker(0)
 {
+  Params::ins().false_rate = 2.0;
+  Params::ins().missing_rate = 4.0;
+  Params::ins().death_rate = 0.02;
+  Params::ins().observation_error = 0.3;
+  Params::ins().sigma_power = 1.0;
+  Params::ins().max_speed = 2.0;
+  Params::ins().max_em_steps = 10;
 
+  Params::ins().observation_proposal_prob = 0.9;
+  Params::ins().false_density = 1.0;
+  Params::ins().refinement_rate = 0.0;
+
+  Params::ins().max_humans = 5;
+  Params::ins().num_particles = 256;
+
+  Params::ins().velocity_augment = true;
+  Params::ins().detection_confidence = true;
+  Params::ins().detection_orientation = false;
+  Params::ins().hierarchical_filters = true;
+  Params::ins().gaussian_approximate = true;
 }
 
 Task::~Task()

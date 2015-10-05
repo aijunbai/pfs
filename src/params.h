@@ -47,15 +47,17 @@ public:
   uint trajectory_size;
   uint max_humans;
   uint max_terms;
-  uint seeding;
+  uint seed;
   uint num_particles;
   uint position_kernel_size;
   double change_intention_rate;
   uint max_em_steps;
+  uint approaching_samples;
 
   bool gaussian_approximate;
   bool velocity_augment;
   bool detection_confidence;
+  bool detection_orientation;
   bool hierarchical_filters;
   bool mixed_filters;
   bool assignment_sampling;
@@ -67,7 +69,7 @@ public:
   double frame_rate;
   std::vector<std::string> bag_names;
   std::string task_name;
-  bool simulation_testing;
+  bool simulation_test;
   bool save_input;
   std::string load_input;
   bool log_date;

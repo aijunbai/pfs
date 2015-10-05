@@ -20,7 +20,7 @@
 class Murty
 {
 private:
-  Murty(const char *path);
+  Murty();
   virtual ~Murty();
 
 public:
@@ -574,8 +574,8 @@ public:
     double min_prob = 1.0e-6;
     double min_weight = log(min_prob);
 
-    for (int i = 0; i < rows; ++i) {
-      for (int j = 0; j < cols; ++j) {
+    for (uint i = 0; i < rows; ++i) {
+      for (uint j = 0; j < cols; ++j) {
         double prob = prob_mat(i, j);
 
         if (prob > 1.0e-6) {
@@ -646,7 +646,7 @@ public:
         // determine solution for changed matrix and create partition
         typename Edges<Scalar>::Ptr S_ = Auction<Scalar>::solve(P_);
 
-        if (S_->size() == P_.rows())// solution found?
+        if (int(S_->size()) == P_.rows())// solution found?
         {
           // sort edges by row
           std::sort(
@@ -660,10 +660,10 @@ public:
         }
         // remove all vertices that include row and column of current node
         // i.e. force using this edge
-        for (size_t r = 0; r < currentPartition.w.rows(); ++r )
+        for (int r = 0; r < currentPartition.w.rows(); ++r )
           currentPartition.w(r, triplet->y) = lockingValue;
 
-        for (size_t c = 0; c < currentPartition.w.cols(); ++c )
+        for (int c = 0; c < currentPartition.w.cols(); ++c )
           currentPartition.w(triplet->x, c) = lockingValue;
 
         // set edge back to original value

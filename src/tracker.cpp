@@ -10,6 +10,7 @@
 #include <boost/math/distributions/gamma.hpp>
 #include <boost/random/poisson_distribution.hpp>
 #include <ctime>
+#include <algorithm>
 
 #include "terminal_utils.h"
 #include <tracker.h>
@@ -41,10 +42,10 @@ const uint32_t ColorPool::PALETTE[] =
 {
  0xFF0000, 0x00FF00, 0x0000FF,
  0xFF8800, 0x00FF88, 0x8800FF,
- 0xFFFF00, 0x00FFFF, 0xFF00FF,
  0xFF0088, 0x88FF00, 0x0088FF,
  0x880000, 0x008800, 0x000088,
- 0x888800, 0x008888, 0x880088
+ 0x888800, 0x008888, 0x880088,
+ 0xFFFF00, 0x00FFFF, 0xFF00FF
 };
 
 const int ColorPool::PALETTE_SIZE = 18;
@@ -96,18 +97,84 @@ void ColorPool::Put(uint color)
 
 IdentifiedHuman::~IdentifiedHuman()
 {
-  if (mDisplayingColor) {
-    ColorPool::ins().Put(*mDisplayingColor);
+  if (mColorCode) {
+    ColorPool::ins().Put(*mColorCode);
   }
 }
 
-uint IdentifiedHuman::DisplayingColor()
+bool IdentifiedHuman::Approaching(const uint samples)
 {
-  if (!mDisplayingColor) {
-    mDisplayingColor = make_shared<uint>(ColorPool::ins().Get(mID));
+//  typedef pair<ros::Time, vector2d> TimedPosition;
+//
+//  vector<TimedPosition> humanTimePosition;
+//  double distThreshold = 2.5;
+//  double timeThreshold = 0.8;
+//  double percCorrect = 0.5;
+//  double directionThreshold = -0.7;
+//
+//  foreach_r_(Track &track, mTrajectory) {
+//    vector2d rel_pos = (track.state->Position() -
+//        track.robot.mPosition).rotate(-track.robot.mAngle);
+//    humanTimePosition.push_back(make_pair(track.time, rel_pos));
+//
+//    if (humanTimePosition.size() >= samples) {
+//      break;
+//    }
+//  }
+//
+//  if (humanTimePosition.size() < samples) {
+//    return false;
+//  }
+//
+//  reverse(humanTimePosition.begin(), humanTimePosition.end());
+//
+//  vector<double> distToRobot;
+//
+//  foreach_(TimedPosition &tp, humanTimePosition) {
+//    double dist = tp.second.length();
+//    distToRobot.push_back(dist);
+//  }
+//
+//  vector<vector2d> veloc;
+//  vector<double> velocNorm;
+//  vector<vector2d> velocDir;
+//
+//  for (int i = 0; i < int(humanTimePosition.size()) - 1; ++i) {
+//    vector2d vel = (humanTimePosition[i+1].second - humanTimePosition[i].second)
+//        / fabs((humanTimePosition[i+1].first - humanTimePosition[i].first).toSec());
+//
+//    veloc.push_back(vel);
+//    velocNorm.push_back(vel.length());
+//    velocDir.push_back(vel.norm());
+//  }
+//
+//  if (distToRobot.back() < distThreshold
+//      && (humanTimePosition.back().first
+//          - humanTimePosition.front().first).toSec() > timeThreshold) {
+//    double sum = 0.0;
+//
+//    for (uint i = 0; i < velocDir.size(); ++i) {
+//      if (veloc[i].length() > 1.0e-6) {
+//        sum += velocDir[i].x <= directionThreshold;
+//      }
+//    }
+//
+//    //PRINT_VALUE(sum);
+//    if (sum >= percCorrect * velocDir.size()) {
+//      return true;
+//    }
+//  }
+
+  return false;
+}
+
+QColor IdentifiedHuman::DisplayingColor()
+{
+  if (!mColorCode) {
+    mColorCode = make_shared<uint>(ColorPool::ins().Get(mID));
   }
 
-  return *mDisplayingColor;
+  return QColor(*mColorCode);
 }
 
 int IdentifiedHuman::Age()
@@ -127,7 +194,8 @@ void IdentifiedHuman::CreateIntentionTracker(Task *task, int debug_level)
 IdentifiedHuman::IdentifiedHuman():
   mID(HumanTracker::NextID()),
   mBornTime(HumanTracker::mCurrentStep),
-  mIntention(0)
+  mIntention(0),
+  mApproaching(false)
 {
 
 }
@@ -415,7 +483,7 @@ void HumanTracker::Update(Observation::Ptr obs, double duration)
     SensorResetting(duration);
   }
 
-  LogRCG();
+  LogRCG(duration);
 
   //clean up
   foreach_(Particle::Ptr &particle, *mParticles) {
@@ -559,18 +627,18 @@ void HumanTracker::LogProposal(shared_ptr<Particles> &particles)
           string str = StringPrintf("pid=%d", pid);
           mRCGLogger[LOG_ALL]->AddPoint(
               hs->Position().x, hs->Position().y,
-              RCGLogger::Green, str.c_str());
+              Qt::lightGray, str.c_str());
         }
         else {
           mRCGLogger[LOG_ALL]->AddPoint(
               hs->Position().x, hs->Position().y,
-              RCGLogger::Green);
+              Qt::lightGray);
         }
 
         vector2d vel = hs->Position() + 0.1 * hs->Velocity();
         mRCGLogger[LOG_ALL]->AddLine(
             hs->Position().x, hs->Position().y, vel.x, vel.y,
-            RCGLogger::Green);
+            Qt::lightGray);
       }
       ++pid;
     }
@@ -659,14 +727,14 @@ void HumanTracker::LogAssignmentsRCG()
           vector2d &o = CurrentObservation().mDetections[it->first]->mPosition;
           vector2d &h = hs->Position();
           mRCGLogger[LOG_ALL]->LogLine(
-              o.x, o.y, h.x, h.y, RCGLogger::White);
+              o.x, o.y, h.x, h.y, Qt::gray);
         }
       }
 
       foreach_(HumanState::Ptr &hs, p->mHumans) {
         if (!h2o.count(hs.get())) {
           vector2d &h = hs->Position();
-          mRCGLogger[LOG_ALL]->AddPoint(h.x, h.y, RCGLogger::Black);
+          mRCGLogger[LOG_ALL]->AddPoint(h.x, h.y, Qt::gray);
         }
       }
 
@@ -675,7 +743,7 @@ void HumanTracker::LogAssignmentsRCG()
   }
 }
 
-void HumanTracker::LogRCG()
+void HumanTracker::LogRCG(double duration)
 {
   if (!mRCGLogger) {
     return;
@@ -693,10 +761,13 @@ void HumanTracker::LogRCG()
   for (int i = 0; i <= HumanTracker::LOG_ALL; ++i) {
     mRCGLogger[i]->AddPoint(
         mRobotPose.mPosition.x, mRobotPose.mPosition.y,
-        RCGLogger::Yellow, "Robot");
+        Qt::black, "Robot");
+
+    for (double d = 0.0; d <= 0.05; d += 0.01) {
     mRCGLogger[i]->LogCircle(
         mRobotPose.mPosition.x, mRobotPose.mPosition.y,
-        0.25, RCGLogger::Yellow);
+          0.25 - d, Qt::black);
+    }
 
     if (Params::ins().view_width < 360.0) {
       vector2d eov1 = mRobotPose.mPosition
@@ -708,94 +779,71 @@ void HumanTracker::LogRCG()
 
       mRCGLogger[i]->LogLine(
           mRobotPose.mPosition.x, mRobotPose.mPosition.y,
-          eov1.x, eov1.y, RCGLogger::White);
+          eov1.x, eov1.y, Qt::black);
       mRCGLogger[i]->LogLine(
           mRobotPose.mPosition.x, mRobotPose.mPosition.y,
-          eov2.x, eov2.y, RCGLogger::White);
+          eov2.x, eov2.y, Qt::black);
     }
 
-    if (mDebugLevel > 2) {
-      for (int i = 0; i < int(mTrajectory.size()) - 1; ++i) {
-        RobotPose *pose = &mTrajectory[i];
-        RobotPose *next_pose = &mTrajectory[i+1];
-
-        vector2d from = pose->mPosition;
-        vector2d to = next_pose->mPosition;
-        mRCGLogger[LOG_ALL]->LogLine(
-            from.x, from.y, to.x, to.y, RCGLogger::Blue);
-      }
-    }
+//    if (mDebugLevel > 2) {
+//      for (int i = 0; i < int(mTrajectory.size()) - 1; ++i) {
+//        RobotPose *pose = &mTrajectory[i];
+//        RobotPose *next_pose = &mTrajectory[i+1];
+//
+//        vector2d from = pose->mPosition;
+//        vector2d to = next_pose->mPosition;
+//        mRCGLogger[LOG_ALL]->LogLine(
+//            from.x, from.y, to.x, to.y, Qt::black);
+//      }
+//    }
   }
 
-  if (mDebugLevel > 1) {
-    int pid = 0;
-    foreach_(Particle::Ptr &p, *mParticles) {
-      if (!p->mHumans.empty()) {
-        if (mDebugLevel > 7) {
-          stringstream ss;
-          ss << "pid=" << pid;
-          p->Log(mRCGLogger[LOG_ALL], true, ss.str().c_str());
-        }
-        else {
-          p->Log(mRCGLogger[LOG_ALL]);
-        }
-      }
-      ++pid;
-    }
-  }
-
-  {
-    int loggers[] = {LOG_ALL, LOG_OBS, LOG_STATE_OBS};
-    double radius[] = {0.01, 0.02, 0.35};
-
-    double delta = 0.35 * sqrt(2.0) / 2.0;
-    int oid = 0;
-
-    foreach_(Detection::Ptr &o, CurrentObservation().mDetections) {
-      foreach_(int l, loggers) {
-        mRCGLogger[l]->AddPoint(o->x(), o->y(), RCGLogger::White);
-
-        foreach_(double r, radius) {
-          mRCGLogger[l]->AddCircle(o->x(), o->y(), r, RCGLogger::White);
-        }
-
-        stringstream ss;
-        ss << "C=" << o->mConfidence;
-        ss << " O:" << oid;
-
-        mRCGLogger[l]->AddPoint(
-            o->x() + delta, o->y() + delta,
-            RCGLogger::White, ss.str().c_str());
-      }
-
-      ++oid;
-    }
-  }
+//  if (mDebugLevel > 1) {
+//    int pid = 0;
+//    foreach_(Particle::Ptr &p, *mParticles) {
+//      if (!p->mHumans.empty()) {
+//        if (mDebugLevel > 7) {
+//          stringstream ss;
+//          ss << "pid=" << pid;
+//          p->Log(mRCGLogger[LOG_ALL], true, ss.str().c_str());
+//        }
+//        else {
+//          p->Log(mRCGLogger[LOG_ALL]);
+//        }
+//      }
+//      ++pid;
+//    }
+//  }
 
   stringstream ss;
   ss << "ExpectedIdentifiedHumanCount: " << ExpectedIdentityCount();
   mRCGLogger[LOG_ALL]->AddText(
-      text_margin, text_position + 0.1, RCGLogger::White, ss.str().c_str());
+      text_margin, text_position + 0.1, Qt::black, ss.str().c_str());
 
   ss.str("");
   ss << "AverageHumanCount: " << AverageHumanCount();
   mRCGLogger[LOG_ALL]->AddText(
-      text_margin, text_position + 0.2, RCGLogger::White, ss.str().c_str());
+      text_margin, text_position + 0.25, Qt::black, ss.str().c_str());
+
+  ss.str("");
+  ss << "UpdateTimeInterval: " << duration << "s";
+  mRCGLogger[LOG_ALL]->AddText(
+      text_margin, text_position + 0.4, Qt::black, ss.str().c_str());
 
   ss.str("");
   ss << "ObservationSize: " << CurrentObservation().mDetections.size();
   mRCGLogger[LOG_OBS]->AddText(
-      text_margin, text_position - 0.1, RCGLogger::White, ss.str().c_str());
+      text_margin, text_position - 0.1, Qt::black, ss.str().c_str());
   mRCGLogger[LOG_STATE_OBS]->AddText(
-      text_margin, text_position - 0.1, RCGLogger::White, ss.str().c_str());
+      text_margin, text_position - 0.1, Qt::black, ss.str().c_str());
   mRCGLogger[LOG_ALL]->AddText(
-      text_margin, text_position - 0.1, RCGLogger::White, ss.str().c_str());
+      text_margin, text_position - 0.1, Qt::black, ss.str().c_str());
 
   ss.str("");
   ss << "Step: " << mCurrentStep;
   for (int i = 0; i <= LOG_ALL; ++i) {
     mRCGLogger[i]->AddText(
-        text_margin, text_position - 1, RCGLogger::White, ss.str().c_str());
+        text_margin, text_position - 1, Qt::black, ss.str().c_str());
   }
 
   if (mDebugLevel > 5) {
@@ -807,6 +855,58 @@ void HumanTracker::LogRCG()
     LogIdentifiedHuman(human, log_position);
     log_position += 0.2;
   }
+  {
+    int loggers[] = {LOG_ALL, LOG_OBS, LOG_STATE_OBS};
+    double radius[] = {/*0.01, 0.02, */0.25};
+
+//    double delta = 0.35 * sqrt(2.0) / 2.0;
+    int oid = 0;
+
+    QColor color(Qt::black);
+//    color.setAlphaF(0.5);
+
+    foreach_(Detection::Ptr &o, CurrentObservation().mDetections) {
+      foreach_(int logger, loggers) {
+//        mRCGLogger[logger]->AddPoint(o->x(), o->y(), Qt::darkGray);
+
+        foreach_(double r, radius) {
+//          mRCGLogger[l]->AddCircle(o->x(), o->y(), r, color);
+
+          mRCGLogger[logger]->LogRectangular(
+              o->x() - r, o->x() + r, o->y() - r, o->y() + r, color);
+
+//          vector2d topleft(o->x() - r, o->y() - r);
+//          vector2d dir = vector2d(1.0, 1.0) / sqrt(2.0);
+//          double len = 2.0 * r * sqrt(2.0);
+//          double step = len / rint(10.0 * o->mConfidence);
+//
+//          for (double d = 0.0; d < len; d += step) {
+//            vector2d c = topleft + d * dir;
+//            double h = (d <= 0.5 * len)? d: len - d;
+//            vector2d a = c + vector2d(1.0, -1.0) * h / sqrt(2.0);
+//            vector2d b = c + vector2d(-1.0, 1.0) * h / sqrt(2.0);
+//
+//            mRCGLogger[logger]->AddLine(a.x, a.y, b.x, b.y, color);
+//          }
+        }
+
+//        stringstream ss;
+//        ss << "C=" << o->mConfidence;
+//        ss << " O:" << oid;
+//
+//        mRCGLogger[l]->AddPoint(
+//            o->x() + delta, o->y() + delta,
+//            Qt::darkGray, ss.str().c_str());
+      }
+
+      ++oid;
+    }
+  }
+
+//  for (double d = 0.0; d <= 0.05; d += 0.01) {
+//    mRCGLogger[LOG_ALL]->LogRectangular(
+//        -10.0 + d, -4.0 - d, 41.0 + d, 45.0 - d, Qt::black);
+//  }
 
   for (int i = 0; i <= LOG_ALL; ++i) {
     mRCGLogger[i]->Flush();
@@ -832,99 +932,127 @@ void HumanTracker::LogIdentifiedHuman(IdentifiedHuman::Ptr &human)
 void HumanTracker::LogIdentifiedHuman(
     IdentifiedHuman::Ptr &human, double text_position)
 {
+  if (!human->ExpectedState()) return;
+  if (human->Confidence() < 0.1) return;
   double text_margin = mRobotPose.mPosition.x +
       Params::ins().text_margin;
 
-  if (!human->ExpectedState()) return;
-
   stringstream ss;
   ss << "Identified Human " << human->mID
-      << " [C=" << human->Confidence() << "] [S="
+      << " [Conf=" << human->Confidence() << "] [Speed="
       << human->ExpectedState()->Velocity().length() << "] :";
   mRCGLogger[LOG_ALL]->AddText(
-      text_margin, text_position, RCGLogger::White, ss.str().c_str());
+      text_margin, text_position, Qt::black, ss.str().c_str());
 
-  {
-    double left = 4.3;
+//  {
+//    double left = 4.3;
+//
+//    for (uint i = 0; i < IntentionFactory::ins().Size(); ++i) {
+//      HumanIntention *intention = IntentionFactory::ins().GetIntention(i);
+//      ss.str("");
+//      ss << " [" << intention->GetName()
+//          << ", " << human->mIntentionDistri[i] << "] ";
+//      mRCGLogger[LOG_ALL]->AddText(
+//          text_margin + left, text_position,
+//          Qt::black,
+//          ss.str().c_str());
+//      left += 3.1;
+//    }
+//  }
 
-    for (uint i = 0; i < IntentionFactory::ins().Size(); ++i) {
-      HumanIntention *intention = IntentionFactory::ins().GetIntention(i);
-      ss.str("");
-      ss << " [" << intention->GetName()
-          << ", " << human->mIntentionDistri[i] << "] ";
-      mRCGLogger[LOG_ALL]->AddText(
-          text_margin + left, text_position,
-          intention->Color(),
-          ss.str().c_str());
-      left += 3.1;
-    }
-  }
+//  mRCGLogger[LOG_ALL]->AddCircle(
+//      human->ExpectedState()->Position().x,
+//      human->ExpectedState()->Position().y, 0.02,
+//      human->DisplayingColor());
+//  mRCGLogger[LOG_ALL]->AddCircle(
+//      human->ExpectedState()->Position().x,
+//      human->ExpectedState()->Position().y, 0.03,
+//      human->DisplayingColor());
+//  mRCGLogger[LOG_ALL]->AddCircle(
+//      human->ExpectedState()->Position().x,
+//      human->ExpectedState()->Position().y, 0.3,
+//      human->DisplayingColor());
+//  vector2d vel = human->ExpectedState()->Velocity();
+//  if (vel.length() > 0.0) {
+//    vel *= 0.3 / vel.length();
+//  }
+//  vel += human->ExpectedState()->Position();
+//  mRCGLogger[LOG_ALL]->AddLine(
+//      human->ExpectedState()->Position().x,
+//      human->ExpectedState()->Position().y,
+//      vel.x, vel.y, human->DisplayingColor());
 
-  RCGLogger::Color color =
-      human->mIntention? human->mIntention->Color(): RCGLogger::Black;
-
-  mRCGLogger[LOG_ALL]->AddCircle(
-      human->ExpectedState()->Position().x,
-      human->ExpectedState()->Position().y, 0.02,
-      color);
-  mRCGLogger[LOG_ALL]->AddCircle(
-      human->ExpectedState()->Position().x,
-      human->ExpectedState()->Position().y, 0.03,
-      color);
-  mRCGLogger[LOG_ALL]->AddCircle(
-      human->ExpectedState()->Position().x,
-      human->ExpectedState()->Position().y, 0.3,
-      color);
-  vector2d vel = human->ExpectedState()->Velocity();
-  if (vel.length() > 0.0) {
-    vel *= 0.3 / vel.length();
-  }
-  vel += human->ExpectedState()->Position();
-  mRCGLogger[LOG_ALL]->AddLine(
-      human->ExpectedState()->Position().x,
-      human->ExpectedState()->Position().y,
-      vel.x, vel.y, color);
-
-  ss.str("");
-  ss << "Identified " << human->mID
-      << " C=" << human->Confidence();
-  double delta = 0.3 * sqrt(2.0) / 2.0;
-  mRCGLogger[LOG_ALL]->AddPoint(human->ExpectedState()->Position().x + delta,
-                                human->ExpectedState()->Position().y - delta,
-                                color, ss.str().c_str());
+//  ss.str("");
+//  ss << "Identified " << human->mID
+//      << " C=" << human->Confidence();
+//  double delta = 0.3 * sqrt(2.0) / 2.0;
+//  mRCGLogger[LOG_ALL]->AddPoint(human->ExpectedState()->Position().x + delta,
+//                                human->ExpectedState()->Position().y - delta,
+//                                human->DisplayingColor(), ss.str().c_str());
 
   if (mDebugLevel > 5) {
     foreach_(HumanState *hs, human->mStatePool) {
       vector2d h = hs->Position();
       vector2d e = human->ExpectedState()->Position();
-      mRCGLogger[LOG_ALL]->LogLine(h.x, h.y, e.x, e.y, RCGLogger::Green);
+      mRCGLogger[LOG_ALL]->LogLine(h.x, h.y, e.x, e.y, Qt::lightGray);
+    }
+  }
+
+  if (mDebugLevel > 1) {
+    foreach_(HumanState *hs, human->mStatePool) {
+      hs->Log(mRCGLogger[LOG_ALL]);
     }
   }
 
   if (mDebugLevel > 2) {
     for (int i = 0; i < int(human->mTrajectory.size()) - 1; ++i) {
-      HumanState::Ptr &state = human->mTrajectory.at(i).first;
-      HumanState::Ptr &next_state = human->mTrajectory.at(i+1).first;
+      HumanState::Ptr &state = human->mTrajectory.at(i).state;
+      HumanState::Ptr &next_state = human->mTrajectory.at(i+1).state;
 
       vector2d &from = state->Position();
       vector2d &to = next_state->Position();
-      RCGLogger::Color color = state->Color();
-      mRCGLogger[LOG_ALL]->LogLine(from.x, from.y, to.x, to.y, color);
+      mRCGLogger[LOG_ALL]->LogLine(
+          from.x, from.y, to.x, to.y, human->DisplayingColor());
     }
   }
 
-  if (mDebugLevel > 1) {
-    if (human->mDetection) {
-      vector2d &e = human->ExpectedState()->Position();
-      vector2d &o = human->mDetection->mPosition;
-      mRCGLogger[LOG_ALL]->LogLine(e.x, e.y, o.x, o.y, RCGLogger::Black);
-    }
-  }
+//  if (mDebugLevel > 1) {
+//    if (human->mDetection) {
+//      vector2d &e = human->ExpectedState()->Position();
+//      vector2d &o = human->mDetection->mPosition;
+//      mRCGLogger[LOG_ALL]->LogLine(e.x, e.y, o.x, o.y, Qt::darkGray);
+//    }
+//  }
 
   for (uint i = 0; i < IntentionFactory::ins().Size(); ++i) {
     foreach_(const HumanState::Ptr &hs, human->mParticlesGivenIntention[i]) {
-      hs->Log(mRCGLogger[LOG_STATE], true, 0);
-      hs->Log(mRCGLogger[LOG_STATE_OBS], true, 0);
+      hs->Log(mRCGLogger[LOG_STATE]);
+      hs->Log(mRCGLogger[LOG_STATE_OBS]);
+    }
+  }
+
+  {
+     mRCGLogger[LOG_ALL]->AddPoint(
+         human->ExpectedState()->Position().x,
+         human->ExpectedState()->Position().y, Qt::black);
+
+     vector2d delta = 0.1 * vector2d(1, 1) / sqrt(2.0);
+
+     for (int i = 0; i < 4; ++i) {
+       vector2d end = human->ExpectedState()->Position() + delta;
+       vector2d dir = delta.rotate(RAD(90.0));
+       int n = rint(15 * human->Confidence());
+       double d = 0.01;
+
+       for (double step = -d * n; step <= d * n; step += d) {
+         vector2d adj = dir * step;
+         mRCGLogger[LOG_ALL]->AddLine(
+             human->ExpectedState()->Position().x + adj.x,
+             human->ExpectedState()->Position().y + adj.y,
+             end.x + adj.x, end.y + adj.y, Qt::black);
+       }
+
+       delta = delta.rotate(RAD(90.0));
     }
   }
 }
@@ -1187,7 +1315,10 @@ void HumanTracker::IntentionRecgonition(double duration)
       }
       else {
         obs->mDetections.push_back(
-            make_shared<Detection>(human->ExpectedState()->Position(), 1.0));
+            make_shared<Detection>(
+                human->ExpectedState()->Position(),
+                human->ExpectedState()->Orientation(),
+                1.0, -1.0, -1.0, -1.0, -1.0));
       }
 
       human->mIntentionTracker->UpdateRobotPose(mRobotPose);
@@ -1257,7 +1388,9 @@ void HumanTracker::UpdateIdentifiedHumans()
 
       state->SetDetection(human->mDetection);
       state->SetIntention(human->mIntention);
-      human->mTrajectory.push_back(make_pair(state, human->Confidence()));
+      human->mTrajectory.push_back(
+          IdentifiedHuman::Track(
+              state, human->Confidence(), mRobotPose));
 
       vector<IdentifiedHuman::Track>::iterator it = human->mTrajectory.begin();
       while (human->mTrajectory.size() > Params::ins().trajectory_size) {
@@ -1267,21 +1400,62 @@ void HumanTracker::UpdateIdentifiedHumans()
 
     vector2d position = vector2d(0.0, 0.0);
     vector2d velocity = vector2d(0.0, 0.0);
+    double orientation = 0.0;
 
     if (!human->mStatePool.empty()) {
+      double orients[5] = {0, 0, 0, 0, 0};
       foreach_(HumanState *hs, human->mStatePool) {
         position += hs->Position();
         velocity += hs->Velocity();
+        if (hs->Orientation() != DBL_MAX) {
+          double orient_local = hs->Orientation() - mRobotPose.mAngle;
+          orient_local = _angle::GetNormalizeAngleRad(orient_local, 0);  // restrict to 0-2pi
+          int bin = (int) round(orient_local / (M_PI / 2.0));
+          if (bin >= 0 && bin <= 4) {
+            orients[bin] += 1;
+          }
+          else {
+            assert(0);
+          }
+        } else {
+          orients[4] += 1;
+        }
       }
 
       position /= human->mStatePool.size();
       velocity /= human->mStatePool.size();
+      int n = 0;
+      for(int i = 0; i < 4; i++) {
+        if(orients[i] >= n) {
+          orientation = i * (M_PI / 2.0) + mRobotPose.mAngle;  // in world frame
+          n = orients[i];
+        }
+      }
+
+      if(orients[4] > n) {
+        orientation = DBL_MAX;
+      }
+
+      if (isinf(orientation) || isnan(orientation)) {
+        assert(0);
+      }
     }
 
     human->ExpectedState()->SetPosition(position);
     human->ExpectedState()->SetVelocity(velocity);
+    human->ExpectedState()->SetOrientation(orientation);
 
     STATISTIC::Add(mIdentifiedHumanConfidence, human->Confidence());
+    bool approaching = human->Approaching(Params::ins().approaching_samples);
+    if (approaching && !human->mApproaching) {
+      if (mRoot) {
+        // speak("hello human");
+      }
+      human->mApproaching = approaching;
+    }
+    //else if (approaching && !human->mApproaching) {
+    //  speak("goodbye human");
+    //}
   }
 
   if (!mIdentifiedHumans.empty()) {
@@ -1305,25 +1479,25 @@ void HumanTracker::BuildStatePools()
     }
   }
 
-  if (mDebugLevel > 0) {
-    foreach_(IdentifiedHuman::Ptr &i, mIdentifiedHumans) {
-      foreach_(HumanState *h, i->mStatePool) {
-        assert(h->mIdentity == i.get());
-      }
-    }
-
-    foreach_(Particle::Ptr &particle, *mParticles) {
-      Particle::HumanList::iterator it = particle->mHumans.begin();
-
-      foreach_(HumanState::Ptr &h, particle->mHumans) {
-        if (h->mIdentity == 0) {
-          foreach_(IdentifiedHuman::Ptr &i, mIdentifiedHumans) {
-            assert(i->mStatePool.count(h.get()) == 0);
-          }
-        }
-      }
-    }
-  }
+//  if (mDebugLevel > 0) {
+//    foreach_(IdentifiedHuman::Ptr &i, mIdentifiedHumans) {
+//      foreach_(HumanState *h, i->mStatePool) {
+//        assert(h->mIdentity == i.get());
+//      }
+//    }
+//
+//    foreach_(Particle::Ptr &particle, *mParticles) {
+//      Particle::HumanList::iterator it = particle->mHumans.begin();
+//
+//      foreach_(HumanState::Ptr &h, particle->mHumans) {
+//        if (h->mIdentity == 0) {
+//          foreach_(IdentifiedHuman::Ptr &i, mIdentifiedHumans) {
+//            assert(i->mStatePool.count(h.get()) == 0);
+//          }
+//        }
+//      }
+//    }
+//  }
 }
 
 void HumanTracker::HumanIdentification(double duration)
@@ -1625,6 +1799,7 @@ double HumanTracker::KernelDensityEstimation(
   }
 
   STATISTIC::Add(mComputedKernelsStat, computed_kernels);
+  STATISTIC::Add(mAllKernelsStat, support->size());
   prob += mBackgroundDensity;
 
   cache[support][key.first][key.second] = prob;

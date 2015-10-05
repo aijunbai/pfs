@@ -33,8 +33,7 @@ public:
   void Filter(
       RobotPose &robot_pose,
       std::vector<Detection::Ptr> &pos,
-      double &duration
-      );
+      double &duration);
 
   bool DebugMode();
   bool End();

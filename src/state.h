@@ -65,12 +65,32 @@ public:
 
   void SetDetection(Detection::Ptr &det);
 
+  double & Orientation() {
+    return mOrientation;
+  }
+
+  const double & Orientation() const {
+    return mOrientation;
+  }
+
+  void SetOrientation(double orient) {
+    mOrientation = orient;
+
+    if (isinf(mOrientation) || isnan(mOrientation)) {
+      mOrientation = DBL_MAX;
+    }
+  }
   HumanIntention *Intention() const {
     return mIntentionDistri.Sampling();
   }
 
-  RCGLogger::Color Color() const;
-  void Log(RCGLogger::Ptr &logger, bool verbose, const char *label);
+//  RCGLogger::Color IntentionColor() const;
+  QColor Color() const;
+
+  void Log(
+      RCGLogger::Ptr &logger,
+      bool velocity = true,
+      const char *label = 0);
 
 public:
   const uint mID; //unique id
@@ -78,6 +98,7 @@ public:
   uint mBornTime;
   vector2d mPosition;
   vector2d mVelocity;
+  double mOrientation;
 
   IdentifiedHuman *mIdentity;
   shared_ptr<TimedDetection> mDetection;

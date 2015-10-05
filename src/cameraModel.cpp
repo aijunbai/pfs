@@ -305,7 +305,7 @@ bool CameraModel::fromDat(std::istream& is, int width, int height)
 
 bool CameraModel::imageToWorld(double Xi, double Yi, double Zw, double& Xw, double& Yw)
 {
-	bool done;
+	bool done = false;
 	double Xd;
 	double Yd;
 	double Xu;

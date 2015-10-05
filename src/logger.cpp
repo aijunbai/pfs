@@ -12,18 +12,18 @@
 
 using namespace std;
 
-void RCGLogger::LogLine(double x1, double y1, double x2, double y2, Color color, const char* comment)
+void RCGLogger::LogLine(double x1, double y1, double x2, double y2, const QColor & color, const char* comment)
 {
   AddPoint(x2, y2, color, comment);
   AddLine(x1, y1, x2, y2, color);
 }
 
-void RCGLogger::LogCircle(double x, double y, double r, Color color)
+void RCGLogger::LogCircle(double x, double y, double r, const QColor & color)
 {
   AddCircle(x, y, r, color);
 }
 
-void RCGLogger::LogRectangular(const double left, const double right, const double top, const double bottom, RCGLogger::Color color)
+void RCGLogger::LogRectangular(const double left, const double right, const double top, const double bottom, const QColor & color)
 {
   AddLine(left, top, right, top, color);
   AddLine(left, top, left, bottom, color);

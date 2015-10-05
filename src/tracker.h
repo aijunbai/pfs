@@ -62,13 +62,24 @@ class IdentifiedHuman
 {
 public:
   typedef shared_ptr<IdentifiedHuman> Ptr;
-  typedef std::pair<HumanState::Ptr, double> Track;
+  struct Track {
+    HumanState::Ptr state;
+    double confidence;
+    RobotPose robot;
+
+    Track(
+        HumanState::Ptr s, double c,
+        const RobotPose &r):
+      state(s), confidence(c), robot(r)  {
+
+    }
+  };
 
 public:
   const uint mID; //unique id
   const uint mBornTime;
 
-  shared_ptr<uint> mDisplayingColor;
+  shared_ptr<uint> mColorCode;
   HumanStatePool mStatePool;
   std::vector<Track> mTrajectory;
   IntentionDistribution mIntentionDistri;
@@ -77,6 +88,7 @@ public:
   shared_ptr<HumanTracker> mIntentionTracker;
   HashMap<uint, Kernels> mKernelsGivenIntention;
   HashMap<uint, HashSet<HumanState::Ptr> > mParticlesGivenIntention;
+  bool mApproaching;
 
   IdentifiedHuman();
   virtual ~IdentifiedHuman();
@@ -85,7 +97,9 @@ public:
     return mIntentionDistri.Sampling();
   }
 
-  uint DisplayingColor();
+  bool Approaching(const uint samples); //whether the person is approaching the robot
+
+  QColor DisplayingColor();
 
   double Confidence() const {
     double conf = double(mStatePool.size()) / Params::ins().num_particles;
@@ -100,7 +114,7 @@ public:
   void CreateIntentionTracker(Task *task, int debug_level);
 
   HumanState *ExpectedState() {
-    return mTrajectory.empty()? 0: mTrajectory.back().first.get();
+    return mTrajectory.empty()? 0: mTrajectory.back().state.get();
   }
 
   void BuildKernerlsGivenIntention(double duration);
@@ -142,7 +156,7 @@ private:
   void ComputePosteriorPredictive(shared_ptr<Particles> &support);
   void BuildPositionKernels(shared_ptr<Particles> &support, std::vector<int> &selected);
 
-  void LogRCG();
+  void LogRCG(double duration);
   void LogParticles(shared_ptr<Particles> &particles, const char *tag);
   void LogProposal(shared_ptr<Particles> &particles);
   void LogIdentifiedHuman(IdentifiedHuman::Ptr &human, double text_position);

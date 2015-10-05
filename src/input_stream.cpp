@@ -34,6 +34,7 @@ InputStream::~InputStream()
       foreach_(Detection::Ptr &det, mObservations.top()) {
         fout << det->mPosition.x << " "
             << det->mPosition.y << " "
+            << det->mOrientation << " "
             << det->mHeight[0] << " "
             << det->mWidth[0] << " "
             << det->mHeight[1] << " "
@@ -85,13 +86,21 @@ void InputStream::Load(string file_name)
     fin >> size;
     for (int i = 0; i < size; ++i) {
       int obs = 0;
-      Detection::Ptr det = make_shared<Detection>();
+      Detection::Ptr det = make_shared<Detection>(
+          vector2d(0.0, 0.0),
+          -1.0,
+          0.0,
+          -1.0,
+          -1.0,
+          -1.0,
+          -1.0);
       vector<Detection::Ptr> observation;
 
       fin >> obs;
       for (int j = 0; j < obs; ++j) {
         fin >> det->mPosition.x >>
           det->mPosition.y >>
+          det->mOrientation >>
           det->mHeight[0] >>
           det->mWidth[0] >>
           det->mHeight[1] >>

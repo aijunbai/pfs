@@ -156,6 +156,7 @@ void Simulator::Run(int argc, char **argv)
 
   while (Params::ins().runto_step < 0
       || int(mTracker->mCurrentStep) <= Params::ins().runto_step) {
+
     SimpleRNG::ins().RandomSeeding(mTracker->mCurrentStep); //sync random seed for debug purposes
 
     Observation::Ptr obs = make_shared<Observation>();
@@ -194,13 +195,13 @@ void Simulator::Run(int argc, char **argv)
             vector2d to = human->mTrajectory.at(i+1);
 
             mTracker->mRCGLogger[HumanTracker::LOG_STATE]->LogLine(
-                from.x, from.y, to.x, to.y, RCGLogger::Blue);
+                from.x, from.y, to.x, to.y, Qt::gray);
 
             mTracker->mRCGLogger[HumanTracker::LOG_STATE_OBS]->LogLine(
-                from.x, from.y, to.x, to.y, RCGLogger::Blue);
+                from.x, from.y, to.x, to.y, Qt::gray);
 
             mTracker->mRCGLogger[HumanTracker::LOG_ALL]->LogLine(
-                from.x, from.y, to.x, to.y, RCGLogger::Blue);
+                from.x, from.y, to.x, to.y, Qt::gray);
           }
         }
       }
@@ -233,7 +234,9 @@ void Simulator::GenerateObservations(Observation &obs, double duration)
       double conf = Observation::SampleTrueConfidence();
 
       obs.mDetections.push_back(
-          make_shared<Detection>(hs->Position() + vector2d(x, y), conf));
+          make_shared<Detection>(
+              hs->Position() + vector2d(x, y), -1.0, conf,
+              -1.0, -1.0, -1.0, -1.0));
     }
   }
 
@@ -254,7 +257,8 @@ void Simulator::GenerateObservations(Observation &obs, double duration)
       vector2d pos = mTracker->FalseDetection();
       double conf = Observation::SampleFalseConfidence();
 
-      obs.mDetections.push_back(make_shared<Detection>(pos, conf));
+      obs.mDetections.push_back(make_shared<Detection>(
+          pos, -1.0, conf, -1.0, -1.0, -1.0, -1.0));
     }
   }
 }

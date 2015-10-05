@@ -4,10 +4,12 @@
 
 TEMPLATE = app
 TARGET = 
-DEPENDPATH += . src src/math src/util
-INCLUDEPATH += . src src/math src/util
 QMAKE_CXXFLAGS += -msse4.1
 LIBS += -lboost_program_options -lxml2
+DEPENDPATH += . src src/math src/util
+INCLUDEPATH += . src src/math src/util
+CONFIG -= debug
+CONFIG -= release
 
 # Input
 HEADERS += src/action.h \

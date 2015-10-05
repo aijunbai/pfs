@@ -50,9 +50,9 @@ public:
 public:
   const uint mID;
 
-  RCGLogger::Color Color() {
-    return RCGLogger::Color(mID % RCGLogger::Color_Max);
-  }
+//  RCGLogger::Color Color() {
+//    return RCGLogger::Color(mID % RCGLogger::Color_Max);
+//  }
 
 private:
   std::string mName;

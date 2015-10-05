@@ -30,6 +30,7 @@ const double ElevatorEnteringTaskBase::mEnvironmentBottom = 4.0;
 const double ElevatorEnteringTaskBase::mWallWidth = 0.15;
 
 const double ElevatorEnteringTaskBase::ElevatorSimulator::mExpectedDoorOpenTime = 10.0;
+const QColor ElevatorEnteringTaskBase::ElevatorSimulator::mWallColor = Qt::blue;
 
 ElevatorEnteringTaskBase::ElevatorEnteringTaskBase():
     Task("ElevatorEnteringTask")
@@ -148,7 +149,7 @@ ElevatorEnteringTaskBase::ElevatorSimulator::ElevatorSimulator(
   Params::ins().missing_rate = 0.5;
   Params::ins().death_rate = 0.02;
 
-  Params::ins().max_humans = 10;
+  Params::ins().max_humans = 5;
 
   mHumanCount = 0;
   mDoorPosition = 0.0;

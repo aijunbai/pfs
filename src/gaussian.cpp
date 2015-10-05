@@ -122,7 +122,7 @@ SimpleRNG &SimpleRNG::ins()
 
 void SimpleRNG::RandomSeeding(int seed)
 {
-  seed += Params::ins().seeding;
+  seed += Params::ins().seed;
 
   srand48(seed);
   srand(seed);

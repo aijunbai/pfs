@@ -12,6 +12,8 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <QColor>
+#include <QString>
 
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
@@ -36,22 +38,6 @@ class RCGLogger {
 public:
   typedef shared_ptr<RCGLogger> Ptr;
 
-  enum Color {
-    Orange,
-    Cyan,
-    Purple,
-    Yellow,
-    Olive,
-    Navy,
-    Green,
-    Gray,
-    Red,
-    Blue,
-    White,
-    Black,
-
-    Color_Max
-  };
 
   struct Vector {
     double x_;
@@ -101,30 +87,14 @@ public:
 
 private:
   struct ItemShape {
-    Color line_color;
+    QColor color_;
 
-    const char *color() const {
-      switch (line_color) {
-      case Red: return "red";
-      case Blue: return "blue";
-      case Green: return "green";
-      case Navy: return "navy";
-      case Orange: return "orange";
-      case Cyan: return "cyan";
-      case Purple: return "purple";
-      case White: return "white";
-      case Black: return "black";
-      case Yellow: return "yellow";
-      case Olive: return "olive";
-      case Gray: return "gray";
-      default: return "black";
+    std::string color() const {
+      return color_.name().toStdString();
       }
 
-      return "black";
-    }
-
-    ItemShape (Color color){
-      line_color = color;
+    ItemShape (const QColor & color) {
+      color_ = color;
     }
   };
 
@@ -132,7 +102,7 @@ private:
     double x, y;
     std::string comment;
 
-    PointShape (double x_, double y_, Color color, const char* cmt = 0): ItemShape(color), x(x_), y(y_) {
+    PointShape (double x_, double y_, const QColor & color, const char* cmt = 0): ItemShape(color), x(x_), y(y_) {
       if (cmt) {
         comment.assign(std::string("@") + cmt);
       }
@@ -147,7 +117,7 @@ private:
     double x1, y1;
     double x2, y2;
 
-    LineShape (double x1_, double y1_, double x2_, double y2_, Color color):
+    LineShape (double x1_, double y1_, double x2_, double y2_, const QColor & color):
        ItemShape(color), x1(x1_), y1(y1_), x2(x2_), y2(y2_)
     {
     };
@@ -161,7 +131,7 @@ private:
     double x, y;
     double radius;
 
-    CircleShape (double x_, double y_, double r, Color color): ItemShape(color), x(x_), y(y_), radius(r) {
+    CircleShape (double x_, double y_, double r, const QColor & color): ItemShape(color), x(x_), y(y_), radius(r) {
     };
 
     friend std::ostream& operator<<(std::ostream &os, CircleShape &circle) {
@@ -170,19 +140,19 @@ private:
   };
 
 public:
-  void AddText(double x, double y, Color color, const char* comment) {
+  void AddText(double x, double y, const QColor & color, const char* comment) {
     points_.push_back(PointShape(x / scale_x_, y / scale_y_, color, comment));
   }
 
-  void AddPoint(double x, double y, Color color = Red, const char* comment = 0) {
+  void AddPoint(double x, double y, const QColor & color, const char* comment = 0) {
     points_.push_back(PointShape(x, y, color, comment));
   }
 
-  void AddLine(double x1, double y1, double x2, double y2, Color color = Yellow) {
+  void AddLine(double x1, double y1, double x2, double y2, const QColor & color) {
     lines_.push_back(LineShape(x1, y1, x2, y2, color));
   }
 
-  void AddCircle(double x, double y, const double &radius, Color color = White) {
+  void AddCircle(double x, double y, const double &radius, const QColor & color) {
     circles_.push_back(CircleShape(x, y, radius, color));
   }
 
@@ -200,9 +170,9 @@ public:
 
   void Flush();
 
-  void LogLine(double x1, double y1, double x2, double y2, Color color, const char* comment = 0);
-  void LogCircle(double x, double y, double r, Color color);
-  void LogRectangular(const double left, const double right, const double top, const double bottom, Color color);
+  void LogLine(double x1, double y1, double x2, double y2, const QColor & color, const char* comment = 0);
+  void LogCircle(double x, double y, double r, const QColor & color);
+  void LogRectangular(const double left, const double right, const double top, const double bottom, const QColor & color);
 
   void Scale(double x, double y);
   void Focus(double x, double y);

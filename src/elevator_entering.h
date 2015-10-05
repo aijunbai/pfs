@@ -116,7 +116,7 @@ public:
     vector2d mCenter;
 
     static const double mExpectedDoorOpenTime;
-    static const RCGLogger::Color mWallColor = RCGLogger::Blue;
+    static const QColor mWallColor;
   };
 
 public:

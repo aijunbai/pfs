@@ -53,38 +53,38 @@ const char *date_string()
   return date_time;
 }
 
-void fitting_observation_data(const string data)
-{
-  ifstream fin(data.c_str());
-
-  if (!fin.good()) {
-    return;
-  }
-
-  vector<vector2d> positions;
-
-  vector2d pos;
-  while (fin >> pos.x >> pos.y) {
-    positions.push_back(pos);
-  }
-  fin.close();
-
-  vector2d mean(0.0, 0.0);
-  foreach_(vector2d &p, positions) {
-    mean += p;
-  }
-  mean /= positions.size();
-
-  STATISTIC::Ptr stat;
-  STATISTIC::Create(stat);
-
-  foreach_(vector2d &p, positions) {
-    STATISTIC::Add(stat, (p - mean).x);
-    STATISTIC::Add(stat, (p - mean).y);
-  }
-
-  STATISTIC::Print(stat, "observation error");
-}
+//void fitting_observation_data(const string data)
+//{
+//  ifstream fin(data.c_str());
+//
+//  if (!fin.good()) {
+//    return;
+//  }
+//
+//  vector<vector2d> positions;
+//
+//  vector2d pos;
+//  while (fin >> pos.x >> pos.y) {
+//    positions.push_back(pos);
+//  }
+//  fin.close();
+//
+//  vector2d mean(0.0, 0.0);
+//  foreach_(vector2d &p, positions) {
+//    mean += p;
+//  }
+//  mean /= positions.size();
+//
+//  STATISTIC::Ptr stat;
+//  STATISTIC::Create(stat);
+//
+//  foreach_(vector2d &p, positions) {
+//    STATISTIC::Add(stat, (p - mean).x);
+//    STATISTIC::Add(stat, (p - mean).y);
+//  }
+//
+//  STATISTIC::Print(stat, "observation error");
+//}
 
 string RandomString(uint len)
 {
@@ -165,7 +165,7 @@ int main(int argc, char** argv)
       InputStream::ins().Save(save_name.c_str());
     }
     else {
-      Params::ins().simulation_testing = false;
+      Params::ins().simulation_test = false;
 
       string load_name = DEFAULT_LOG_PATH;
       load_name += Params::ins().load_input;
@@ -174,7 +174,7 @@ int main(int argc, char** argv)
     }
   }
 
-  if (Params::ins().simulation_testing) {
+  if (Params::ins().simulation_test) {
     task->SimulationTest(argc, argv);
   }
   else if (!Params::ins().load_input.empty()) {

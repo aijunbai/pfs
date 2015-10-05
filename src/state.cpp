@@ -16,6 +16,7 @@
 #include "elevator_entering.h"
 #include "simulator.h"
 
+ #include <QColor>
 using namespace std;
 
 HumanState::HumanState(Detection::Ptr det):
@@ -23,6 +24,8 @@ HumanState::HumanState(Detection::Ptr det):
     mBornTime(HumanTracker::mCurrentStep),
     mPosition(det? det->mPosition: vector2d(0.0, 0.0)),
     mVelocity(_motion::RandomVelocity()),
+    mOrientation(Params::ins().detection_orientation?
+        _motion::RandomAngle(): DBL_MAX),
     mIdentity(0),
     mIntentionDistri(IntentionDistribution::Random())
 {
@@ -36,6 +39,7 @@ HumanState::HumanState(const HumanState &o):
     mBornTime(o.mBornTime),
     mPosition(o.mPosition),
     mVelocity(o.mVelocity),
+    mOrientation(o.mOrientation),
     mIdentity(o.mIdentity),
     mDetection(o.mDetection),
     mIntentionDistri(o.mIntentionDistri)
@@ -66,6 +70,7 @@ void HumanState::CopyFrom(const HumanState &o)
   mBornTime = o.mBornTime;
   mPosition = o.mPosition;
   mVelocity = o.mVelocity;
+  mOrientation = o.mOrientation;
   mIntentionDistri = o.mIntentionDistri;
   mDetection = o.mDetection;
 
@@ -102,21 +107,29 @@ void HumanState::IntentionAwarePredict(double duration, bool transition)
   intention->ChooseAction(*this)->Apply(*this, duration);
 }
 
-RCGLogger::Color HumanState::Color() const
+QColor HumanState::Color() const
 {
-  if (mIntentionDistri.isZero()) {
-    return RCGLogger::Black;
+  if (!mIdentity) {
+    return QColor("gray");
   }
 
-  HumanIntention *intention = Intention();
-  return intention->Color();
+  return mIdentity->DisplayingColor();
 }
+//RCGLogger::Color HumanState::IntentionColor() const
+//{
+//  if (mIntentionDistri.isZero()) {
+//    return RCGLogger::Gray;
+//  }
+//
+//  HumanIntention *intention = Intention();
+//  return intention->Color();
+//}
 
 void HumanState::Log(
-    RCGLogger::Ptr &logger, bool verbose, const char *label)
+    RCGLogger::Ptr &logger, bool velocity, const char *label)
 {
-  if (verbose) {
-    vector2d vel = Position() + 0.1 * Velocity();
+  if (velocity) {
+    vector2d vel = Position() + 0.08 * Velocity();
     logger->AddLine(Position().x, Position().y, vel.x, vel.y, Color());
   }
 

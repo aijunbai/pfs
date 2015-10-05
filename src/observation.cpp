@@ -42,21 +42,21 @@ void Observation::Reset()
 }
 
 double Observation::ObservationLikelihoodTimed(
-    const TimedDetection &det, HumanState &hs)
+    const TimedDetection &det, const HumanState &hs)
 {
   double duration = HumanTracker::mCumulativeDuration - det.second;
   duration = Max(duration, Params::ins().sleep_duration);
 
-  vector2d pos = hs.mPosition - hs.mVelocity * duration;
+  HumanState old(hs);
+  old.SetPosition(hs.mPosition - hs.mVelocity * duration);
 
-  return ObservationLikelihoodSingle(det.first->mPosition, pos);
-
-  return 0.0;
+  return ObservationLikelihoodSingle(*(det.first), old);
 }
 
-double Observation::ObservationLikelihoodAugmented(Detection &det, HumanState &hs)
+double Observation::ObservationLikelihoodAugmented(
+    const Detection &det, const HumanState &hs)
 {
-  double prob = ObservationLikelihoodSingle(det.mPosition, hs.mPosition);
+  double prob = ObservationLikelihoodSingle(det, hs);
 
   if (hs.mDetection && prob > 0.0) {
     prob *= ObservationLikelihoodTimed(*hs.mDetection, hs);
@@ -66,17 +66,28 @@ double Observation::ObservationLikelihoodAugmented(Detection &det, HumanState &h
 }
 
 double Observation::ObservationLikelihoodSingle(
-    const vector2d &obs, const vector2d &pos)
+    const Detection &det, const HumanState &hs)
 {
   static const double error = Params::ins().observation_error;
 
-  double dist = (obs - pos).length();
+  double dist = (det.mPosition - hs.mPosition).length();
   double prob = Gaussian::ins().pdf(0.0, error, dist);
+  if (Params::ins().detection_orientation) {
+    double orient_prob = 1;
+    if (det.mOrientation == DBL_MAX) {
+      orient_prob = 0.5;
+    } else if ( _angle::GetAngleRadDiffer(det.mOrientation, hs.Orientation()) >=
+        M_PI / 4.0) {
+      orient_prob = 0.2;
+    }
+
+    prob = prob * orient_prob;
+  }
 
   return prob;
 }
 
-double Observation::ObservationLikelihood(int o, HumanState &hs)
+double Observation::ObservationLikelihood(int o, const HumanState &hs)
 {
   Detection::Ptr det = mDetections[o];
   double prob = TruePositiveLikelihood(det->mConfidence);
@@ -86,7 +97,7 @@ double Observation::ObservationLikelihood(int o, HumanState &hs)
       prob *= ObservationLikelihoodAugmented(*det, hs);
     }
     else {
-      prob *= ObservationLikelihoodSingle(det->mPosition, hs.mPosition);
+      prob *= ObservationLikelihoodSingle(*det, hs);
     }
   }
 

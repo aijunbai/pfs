@@ -30,7 +30,7 @@
 #include <tr1/unordered_set>
 
 #define DEFAULT_LOG_NAME "human_tracker"
-#define DEFAULT_LOG_PATH "../.logs/"
+#define DEFAULT_LOG_PATH "logs/human_tracker/"
 
 #define foreach_         BOOST_FOREACH
 #define foreach_r_       BOOST_REVERSE_FOREACH
@@ -120,6 +120,7 @@ namespace _angle {
 inline double GetNormalizeAngleDeg(
     double ang, const double min_ang = -180.0)
 {
+  ang = DEG(angle_mod(RAD(ang)));
   if (ang < min_ang) {
     do {
       ang += 360.0;
@@ -139,6 +140,7 @@ inline double GetNormalizeAngleDeg(
 inline double GetNormalizeAngleRad(
     double ang, const double min_ang = -M_PI)
 {
+  ang = angle_mod(ang);
   while (ang > 2.0 * M_PI + min_ang)
   {
     ang -= 2.0 * M_PI;
@@ -164,6 +166,16 @@ inline bool IsAngleRadInBetween(
 {
   return GetNormalizeAngleRad(gamma, alpha) <=
       GetNormalizeAngleDeg(beta, alpha);
+}
+
+inline double GetAngleDegDiffer(const double & ang1, const double & ang2)
+{
+  return fabs(GetNormalizeAngleDeg(ang1 - ang2));
+}
+
+inline double GetAngleRadDiffer(const double & ang1, const double & ang2)
+{
+  return fabs(GetNormalizeAngleRad(ang1 - ang2));
 }
 
 }
@@ -230,5 +242,26 @@ inline double NoiseAngle(double error = 5.0)
 
 }
 
+inline void speak(const char *msg, int num = -1)
+{
+  std::string cmd;
+
+  cmd += "espeak \"";
+  cmd += msg;
+
+  if (num != -1) {
+    std::stringstream num_string;
+    num_string << num;
+
+    cmd += " ";
+    cmd += num_string.str();
+  }
+
+  cmd += "\" & 2>&1 1>/dev/null";
+  std::cerr << cmd << std::endl;
+
+  int r = ::system(cmd.c_str());
+  (void) r;
+}
 
 #endif /* COMMON_H_ */
