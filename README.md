@@ -27,16 +27,16 @@ Allowed options:
 -  --runto arg                           Run to step
 -  --save_input [=arg(=1)]               Save all inputs (including time)
 -  --load_input [=arg(=human_tracker.input)]
--                                        Load all inputs (including time)
+                                        Load all inputs (including time)
 -  --log_date [=arg(=1)]                 Use date as log name
 -  --simulator_expected_humans arg       Simulator expected number of humans
 -  --simulator_distance_threshold [=arg(=1)]
--                                        Simulator statistic distance threshold
+                                        Simulator statistic distance threshold
 -  --camera_calibration [=arg(=MOT-benchmarks/camera.xml)]
--                                        Camera calibration file (for benchmark 
--                                        testing)
+                                        Camera calibration file (for benchmark 
+                                        testing)
 -  --benchmark_data arg                  Load benchmark detection and ground 
--                                        truth data
+                                        truth data
 -  --cropped [=arg(=1)]                  Use cropped data
 -  --approximation_test [=arg(=1)]       Approximation error test
 -  --interface [=arg(=1)]                Show benchmark interface
@@ -47,7 +47,7 @@ Allowed options:
 -  --position_kernel_size arg            Position kernel size
 -  --max_em_steps arg                    Max EM steps
 -  --approaching_samples arg             Human approaching identification 
--                                        samples
+                                        samples
 -  --false_rate arg                      False detection rate
 -  --missing_rate arg                    Missing detection rate
 -  --false_density arg                   False detection density
