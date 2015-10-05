@@ -6,7 +6,8 @@ rm -f core*
 rm -f valgrind.log vgcore.* hs_err_pid*.log
 
 DIR=`pwd`
-cd /home/baj/Dropbox/Workspace/cobot/.logs/human_tracker/
+mkdir -p logs/human_tracker/
+cd logs/human_tracker/
 rm -fr bak/
 mkdir -p bak/intentions
 mkdir -p intentions
