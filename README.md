@@ -6,7 +6,7 @@ This is code release of paper [Intention-Aware Multi-Human Tracking for Human-Ro
 Experimental results over PETS2009 S2L1 dataset are available at 
 https://www.youtube.com/watch?v=M2VjS2tMNmg. 
 
-Generated log files can be played by rcg\_player (https://github.com/aijunbai/rcg\_player).
+Generated log files can be played by rcg\_player (https://github.com/aijunbai/rcg_player).
 
 ## Usage
 ### Building
