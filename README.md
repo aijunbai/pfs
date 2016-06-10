@@ -5,21 +5,28 @@ A Particle Filtering over Sets Approach to Multi-Object Tracking
 
 This is code release of paper [Intention-Aware Multi-Human Tracking for Human-Robot Interaction via Particle Filtering over Sets](http://aijunbai.github.io/publications/9111-40050-1-PB.pdf), Aijun Bai, Reid Simmons, Manuela Veloso, and Xiaoping Chen, AAAI 2014 Fall Symposium: AI for Human-Robot Interaction (AI-HRI), Arlington, Virginia, United States, November 2014.
 
-Experimental results over PETS2009 S2L1 dataset are available at 
-https://www.youtube.com/watch?v=M2VjS2tMNmg. 
+Experimental results over PETS2009 S2L1 dataset are available at https://www.youtube.com/watch?v=M2VjS2tMNmg. 
 
-Generated log files can be played by rcg\_player (https://github.com/aijunbai/rcg_player).
+Generated log files can be played by [rcg\_player](https://github.com/aijunbai/rcg_player).
 
-## Usage
-### Building
-- qmake  # Running qmake to generate Makefile
-- make -j4  # Building using Makefile
+# Dependencies
+- libxml2-dev 
+- libqt4-dev 
+- qt4-qmake 
+- libboost-dev 
+- libboost-program-options-dev 
+- libeigen3-dev 
+- libpopt-dev 
 
-### Running
-- ./PETS-S2L1V1.sh  # Running pfs on PETS-S2L1V1 dataset
-- ./TUD-Stadtmitte.sh  # Running pfs on TUD-Stadtmitte dataset
+# Compiling
+- `qmake`  # Running qmake to generate Makefile
+- `make -j4` # Building using Makefile
 
-### Command line interface
+# Running
+- `./PETS-S2L1V1.sh`  # Running pfs on PETS-S2L1V1 dataset
+- `./TUD-Stadtmitte.sh`  # Running pfs on TUD-Stadtmitte dataset
+
+# Command line interface
 Allowed options:
 
 -  --help                                Produce help message
