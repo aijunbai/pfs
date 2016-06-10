@@ -1,0 +1,15 @@
+language: cpp
+os: linux
+sudo: required
+dist: trusty
+compiler: gcc
+before_script:
+    - sudo apt-get update -qq
+    - sudo apt-get install -y libxml2-dev libqt4-dev qt4-qmake libboost-dev libboost-program-options-dev libeigen3-dev libpopt-dev
+script: make
+notifications:
+    email:
+        recipients: aijunbai@gmail.com
+        on_success: change
+        on_failure: always
+

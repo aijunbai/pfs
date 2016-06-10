@@ -1,4 +1,6 @@
 # pfs
+[![Build Status](https://travis-ci.org/aijunbai/pfs.svg?branch=master)](https://travis-ci.org/aijunbai/pfs)  
+
 A Particle Filtering over Sets Approach to Multi-Object Tracking
 
 This is code release of paper [Intention-Aware Multi-Human Tracking for Human-Robot Interaction via Particle Filtering over Sets](http://aijunbai.github.io/publications/9111-40050-1-PB.pdf), Aijun Bai, Reid Simmons, Manuela Veloso, and Xiaoping Chen, AAAI 2014 Fall Symposium: AI for Human-Robot Interaction (AI-HRI), Arlington, Virginia, United States, November 2014.
