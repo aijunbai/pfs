@@ -3,9 +3,9 @@
 
 A Particle Filtering over Sets Approach to Multi-Object Tracking
 
-This is code release of paper [Intention-Aware Multi-Human Tracking for Human-Robot Interaction via Particle Filtering over Sets](http://aijunbai.github.io/publications/9111-40050-1-PB.pdf), Aijun Bai, Reid Simmons, Manuela Veloso, and Xiaoping Chen, AAAI 2014 Fall Symposium: AI for Human-Robot Interaction (AI-HRI), Arlington, Virginia, United States, November 2014.
+This is code release of paper [Intention-Aware Multi-Human Tracking for Human-Robot Interaction via Particle Filtering over Sets](http://aijunbai.github.io/publications/AAAI14-Bai.pdf), Aijun Bai, Reid Simmons, Manuela Veloso, and Xiaoping Chen, AAAI 2014 Fall Symposium: AI for Human-Robot Interaction (AI-HRI), Arlington, Virginia, United States, November 2014.
 
-Experimental results over PETS2009 S2L1 dataset are available at https://www.youtube.com/watch?v=M2VjS2tMNmg. 
+Experimental results over PETS2009 S2L1 dataset are available at [https://www.youtube.com/watch?v=M2VjS2tMNmg](https://www.youtube.com/watch?v=M2VjS2tMNmg).
 
 Generated log files can be played by [rcg\_player](https://github.com/aijunbai/rcg_player).
 
